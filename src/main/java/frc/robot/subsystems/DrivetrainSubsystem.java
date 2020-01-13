@@ -7,27 +7,27 @@
 
 package frc.robot.subsystems;
 
-import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 
-import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.drive.MecanumDrive;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Robot;
 
 public class DrivetrainSubsystem extends SubsystemBase {
 
-  WPI_VictorSPX leftMaster = new WPI_VictorSPX(0);
-  WPI_VictorSPX leftSlave = new WPI_VictorSPX(1);
-  WPI_VictorSPX rightMaster = new WPI_VictorSPX(2);
-  WPI_VictorSPX rightSlave = new WPI_VictorSPX(3);
+  WPI_VictorSPX leftFront = new WPI_VictorSPX(0);
+  WPI_VictorSPX leftBack = new WPI_VictorSPX(1);
+  WPI_VictorSPX rightFront = new WPI_VictorSPX(2);
+  WPI_VictorSPX rightBack = new WPI_VictorSPX(3);
 
+  MecanumDrive drive = new MecanumDrive(leftFront, leftBack, rightFront, rightBack);
 
-
-  DifferentialDrive drive = new DifferentialDrive(leftMaster, rightMaster);
   /**
    * Creates a new ExampleSubsystem.
    */
   public DrivetrainSubsystem() {
-      leftSlave.follow(leftMaster);
+    super();
+    //setDefaultCommand(new ManualDriveCommand());
   }
 
   @Override
@@ -35,7 +35,11 @@ public class DrivetrainSubsystem extends SubsystemBase {
     // This method will be called once per scheduler run
   }
 
-  public void drive(double move, double turn){
-    drive.arcadeDrive(move, turn);
+  public void drive(double x, double y, double zRotation){
+
+    Robot.x += x;
+    Robot.y += y;
+    Robot.zr += zRotation;
+    drive.driveCartesian(x, y, zRotation);
   }
 }

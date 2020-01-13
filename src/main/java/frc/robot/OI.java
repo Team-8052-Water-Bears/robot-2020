@@ -8,12 +8,24 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import frc.robot.commands.IntakeCommand;
+import frc.robot.commands.ShootCommand;
 
 /**
  * Add your docs here.
  */
 public class OI {
-    public Joystick lefJoystick = new Joystick(0);
+    public XboxController xboxController = new XboxController(0);
+    public Joystick joystick = new Joystick(1);
+    public JoystickButton aButton = new JoystickButton(xboxController, 1);
+    public JoystickButton bButton = new JoystickButton(xboxController, 2);
+
+    public OI(){
+        aButton.whenPressed(new ShootCommand());
+        bButton.whenPressed(new IntakeCommand());
+    }
 
     public static double deadzone(double value){
         return Math.abs(value) < Constants.deadzone ? 0 : value;

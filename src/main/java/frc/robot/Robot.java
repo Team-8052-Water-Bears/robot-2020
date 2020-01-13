@@ -10,6 +10,8 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.commands.ManualDriveCommand;
+import frc.robot.subsystems.DrivetrainSubsystem;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -19,8 +21,9 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
  */
 public class Robot extends TimedRobot {
 
-  public static OI oi;
-
+  public static double x = 0, y = 0, zr = 0, lx = 0, ly =0 , lz = 0;
+  public static OI oi = new OI();
+  public static DrivetrainSubsystem drivetrain = new DrivetrainSubsystem();
   private Command autonomousCommand;
   private RobotContainer robotContainer;
 
@@ -31,8 +34,10 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     oi = new OI();
+    drivetrain.setDefaultCommand(new ManualDriveCommand());
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
+    System.out.println("Robot::robotInit");
     robotContainer = new RobotContainer();
   }
 
@@ -50,6 +55,16 @@ public class Robot extends TimedRobot {
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
+    if(x != lx)
+      System.out.println("X: " + x);
+    if(y != ly)
+      System.out.println("Y: " + y);
+    if(zr != lz)
+     System.out.println("Zr: " + zr);
+
+    lx = x;
+    ly = y;
+    lz = zr;
   }
 
   /**

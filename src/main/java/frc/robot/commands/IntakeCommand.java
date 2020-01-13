@@ -8,43 +8,36 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.OI;
-import frc.robot.Robot;
 
-public class ManualDriveCommand extends CommandBase {
+public class IntakeCommand extends CommandBase {
   /**
-   * Creates a new ManualDriveCommand.
+   * Creates a new IntakeCommand.
    */
-  public ManualDriveCommand() {
+  public IntakeCommand() {
     // Use addRequirements() here to declare subsystem dependencies.
-    System.out.println(Robot.drivetrain);
-    addRequirements(Robot.drivetrain);
+
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    System.out.println("Command::initialize");
+    System.out.println("Intake::Initialize");
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-      double x = OI.deadzone(-Robot.oi.joystick.getY());
-      double y = OI.deadzone(Robot.oi.joystick.getX());
-      double zr = OI.deadzone(Robot.oi.joystick.getZ());
-      Robot.drivetrain.drive(x, y, zr);
+    System.out.println("Intake::execute");
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    System.out.println("Command::end");
   }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return false;
+    return true;
   }
 }
