@@ -28,6 +28,6 @@ public class OI {
     }
 
     public static double deadzone(double value){
-        return Math.abs(value) < Constants.deadzone ? 0 : value;
+        return Math.abs(value) < Constants.Deadzone ? 0 : value;
     }
 }

@@ -11,7 +11,7 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.commands.ManualDriveCommand;
-import frc.robot.subsystems.DrivetrainSubsystem;
+import frc.robot.subsystems.MecanumDrivetrainSubsystem;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -21,9 +21,9 @@ import frc.robot.subsystems.DrivetrainSubsystem;
  */
 public class Robot extends TimedRobot {
 
-  public static double x = 0, y = 0, zr = 0, lx = 0, ly =0 , lz = 0;
+  public static double x = 0, y = 0, zr = 0, lx = 0, ly = 0 , lz = 0;
   public static OI oi = new OI();
-  public static DrivetrainSubsystem drivetrain = new DrivetrainSubsystem();
+  public static MecanumDrivetrainSubsystem drivetrain = new MecanumDrivetrainSubsystem();
   private Command autonomousCommand;
   private RobotContainer robotContainer;
 
@@ -84,7 +84,7 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     autonomousCommand = robotContainer.getAutonomousCommand();
-
+    System.out.println("STARTING AUTONOMOUS");
     // schedule the autonomous command (example)
     if (autonomousCommand != null) {
       autonomousCommand.schedule();
