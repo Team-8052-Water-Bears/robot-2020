@@ -12,6 +12,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.commands.ManualDriveCommand;
 import frc.robot.subsystems.MecanumDrivetrainSubsystem;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -24,6 +27,8 @@ public class Robot extends TimedRobot {
   public static double x = 0, y = 0, zr = 0, lx = 0, ly = 0 , lz = 0;
   public static OI oi = new OI();
   public static MecanumDrivetrainSubsystem drivetrain = new MecanumDrivetrainSubsystem();
+
+  private NetworkTableEntry ntX;
   private Command autonomousCommand;
   private RobotContainer robotContainer;
 
@@ -39,6 +44,8 @@ public class Robot extends TimedRobot {
     // autonomous chooser on the dashboard.
     System.out.println("Robot::robotInit");
     robotContainer = new RobotContainer();
+    NetworkTable table = NetworkTableInstance.getDefault().getTable("Test");
+    ntX = table.getEntry("X");
   }
 
   /**
@@ -61,7 +68,7 @@ public class Robot extends TimedRobot {
       System.out.println("Y: " + y);
     if(zr != lz)
      System.out.println("Zr: " + zr);
-
+    ntX.setDouble(x);
     lx = x;
     ly = y;
     lz = zr;

@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.commands.IntakeCommand;
+import frc.robot.commands.LookAtBallCommand;
 import frc.robot.commands.ShootCommand;
 
 /**
@@ -18,11 +19,17 @@ import frc.robot.commands.ShootCommand;
  */
 public class OI {
     public XboxController xboxController = new XboxController(0);
-    public Joystick joystick = new Joystick(1);
+    public Joystick driverJoystick = new Joystick(1);
+    public JoystickButton lookAtBallButton = new JoystickButton(driverJoystick, 1);
+    // The fist port on a controller is 1 :/
     public JoystickButton aButton = new JoystickButton(xboxController, 1);
     public JoystickButton bButton = new JoystickButton(xboxController, 2);
 
     public OI(){
+        // Driver
+        lookAtBallButton.whenHeld(new LookAtBallCommand(), true);
+
+        // Operator
         aButton.whenPressed(new ShootCommand());
         bButton.whenPressed(new IntakeCommand());
     }

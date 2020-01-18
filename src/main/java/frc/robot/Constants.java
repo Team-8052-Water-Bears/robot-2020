@@ -20,14 +20,17 @@ import edu.wpi.first.wpilibj.kinematics.MecanumDriveKinematics;
  */
 public final class Constants {
     // Postions of the wheel relative to the physical center of robot
+    // These values are assumptions and not tested
     public static final Translation2d lfWheel = new Translation2d(0, 1);
     public static final Translation2d rfWheel = new Translation2d(1, 1);
     public static final Translation2d lbWheel = new Translation2d(0, 0);
     public static final Translation2d rbWheel = new Translation2d(1, 0);
 
+    // This shoudl probably be moved
     public static final MecanumDriveKinematics MecanumKinematics = new MecanumDriveKinematics(lfWheel, rfWheel, lbWheel, rbWheel);
     public static final double Deadzone = 0.1;
     public static final boolean GyroReversed = false;
+	public static final String VisonTableKey = "Vision";
 
 
     public static class AutoConstants{
