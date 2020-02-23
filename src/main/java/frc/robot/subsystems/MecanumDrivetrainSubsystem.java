@@ -7,45 +7,52 @@
 
 package frc.robot.subsystems;
 
-import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
-
-import edu.wpi.first.wpilibj.ADXRS450_Gyro;
+import com.analog.adis16448.frc.ADIS16448_IMU;
+import com.analog.adis16448.frc.ADIS16448_IMU.IMUAxis;
+import edu.wpi.first.hal.FRCNetComm.tInstances;
+import edu.wpi.first.hal.FRCNetComm.tResourceType;
+import edu.wpi.first.hal.HAL;
 import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.PWMVictorSPX;
+import edu.wpi.first.wpilibj.SPI;
+import edu.wpi.first.wpilibj.SpeedController;
+import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.drive.MecanumDrive;
+import edu.wpi.first.wpilibj.drive.Vector2d;
+import edu.wpi.first.wpilibj.drive.RobotDriveBase.MotorType;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.interfaces.Gyro;
 import edu.wpi.first.wpilibj.kinematics.MecanumDriveOdometry;
 import edu.wpi.first.wpilibj.kinematics.MecanumDriveWheelSpeeds;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpiutil.math.MathUtil;
 import frc.robot.Constants;
-import frc.robot.Robot;
 
 public class MecanumDrivetrainSubsystem extends SubsystemBase {
 
-  WPI_VictorSPX leftFront = new WPI_VictorSPX(0);
-  WPI_VictorSPX leftBack = new WPI_VictorSPX(1);
-  WPI_VictorSPX rightFront = new WPI_VictorSPX(2);
-  WPI_VictorSPX rightBack = new WPI_VictorSPX(3);
+  PWMVictorSPX frontLeftController = new PWMVictorSPX(0);
+  PWMVictorSPX rearRightController = new PWMVictorSPX(1);
+  PWMVictorSPX rearLeftController = new PWMVictorSPX(2);
+  PWMVictorSPX frontRightController = new PWMVictorSPX(3);
 
-  MecanumDrive drive = new MecanumDrive(leftFront, leftBack, rightFront, rightBack);
-  // DIO ports, not sure which ones to use, these encoders are just for example
-  Encoder lfEncoder = new Encoder(0, 1);
-  Encoder rfEncoder = new Encoder(2, 3);
-  Encoder lbEncoder = new Encoder(4, 5);
-  Encoder rbEncoder = new Encoder(6, 7);
+  PIDController rearLeftPID = new PIDController(0, 0, 0);
+  PIDController rearRightPID = new PIDController(0, 0, 0);
+  PIDController frontLeftPID = new PIDController(0, 0, 0);
+  PIDController frontRightPID = new PIDController(0, 0, 0);
 
-  // not surw what gyo we are using but here is a random one
-  Gyro gyro = new ADXRS450_Gyro();
+  MecaDrive drive = new MecaDrive(frontLeftController, rearLeftController, frontRightController, rearRightController);
+
+  ADIS16448_IMU imu = new ADIS16448_IMU(IMUAxis.kZ, SPI.Port.kMXP, 5);
 
   MecanumDriveOdometry odometry;
+
   /**
    * Creates a new ExampleSubsystem.
    */
   public MecanumDrivetrainSubsystem() {
     super();
     odometry = new MecanumDriveOdometry(Constants.MecanumKinematics, new Rotation2d());
-    //setDefaultCommand(new ManualDriveCommand());
+    // setDefaultCommand(new ManualDriveCommand());
   }
 
   @Override
@@ -54,27 +61,98 @@ public class MecanumDrivetrainSubsystem extends SubsystemBase {
     odometry.update(Rotation2d.fromDegrees(getHeading()), getSpeeds());
   }
 
-  public void drive(double x, double y, double zRotation){
-
-    Robot.x += x;
-    Robot.y += y;
-    Robot.zr += zRotation;
-    drive.driveCartesian(x, y, zRotation);
+  // Called periodically when ManualDriveCommand is running
+  public void drive(double x, double y, double zRotation) {
+    drive.driveCartesian(x, y, zRotation, 0.0);
   }
 
-  public void setSpeeds(MecanumDriveWheelSpeeds speeds){
-    
+  public void setSpeeds(MecanumDriveWheelSpeeds speeds) {
+
   }
 
-  public MecanumDriveWheelSpeeds getSpeeds(){
-    return new MecanumDriveWheelSpeeds(lfEncoder.getRate(), rfEncoder.getRate(), lbEncoder.getRate(), lbEncoder.getRate());
+  public MecanumDriveWheelSpeeds getSpeeds() {
+    return new MecanumDriveWheelSpeeds(getEncoder(MotorType.kFrontLeft).getRate(), getEncoder(MotorType.kFrontRight).getRate(),
+    getEncoder(MotorType.kRearLeft).getRate(), getEncoder(MotorType.kRearRight).getRate());
+  }
+
+  public Encoder getEncoder(MotorType mt){
+    return drive.encoders[mt.value];
   }
 
   public double getHeading() {
-    return Math.IEEEremainder(gyro.getAngle(), 360) * (Constants.GyroReversed ? -1.0 : 1.0);
+    return Math.IEEEremainder(imu.getAngle(), 360) * (Constants.GyroReversed ? -1.0 : 1.0);
   }
 
-  public Pose2d getPose(){
+  public Pose2d getPose() {
     return odometry.getPoseMeters();
+  }
+}
+
+class MecaDrive extends MecanumDrive {
+
+  public Encoder[] encoders = new Encoder[] { new Encoder(0, 1), new Encoder(2, 3), new Encoder(4, 5), new Encoder(6, 7), };
+  double Kp = 0.3, Ki = 0, Kd = 0;
+  SpeedController[] speedControllers;
+  PIDController[] controllers = new PIDController[] { new PIDController(Kp, Ki, Kd), new PIDController(Kp, Ki, Kd),
+      new PIDController(Kp, Ki, Kd), new PIDController(Kp, Ki, Kd), };
+
+
+  double[] inputSpeeds = new double[4];
+  double[] wheelSpeeds = new double[4];
+  boolean reported;
+
+  public MecaDrive(SpeedController frontLeftMotor, SpeedController rearLeftMotor, SpeedController frontRightMotor,
+      SpeedController rearRightMotor) {
+    super(frontLeftMotor, rearLeftMotor, frontRightMotor, rearRightMotor);
+    speedControllers = new SpeedController[] { frontLeftMotor, frontRightMotor, rearLeftMotor, rearRightMotor };
+  }
+
+  @Override
+  public void driveCartesian(double ySpeed, double xSpeed, double zRotation, double gyroAngle) {
+    if (!reported) {
+      HAL.report(tResourceType.kResourceType_RobotDrive, tInstances.kRobotDrive2_MecanumCartesian, 4);
+      reported = true;
+    }
+
+    ySpeed = MathUtil.clamp(ySpeed, -1.0, 1.0);
+    ySpeed = applyDeadband(ySpeed, m_deadband);
+
+    xSpeed = MathUtil.clamp(xSpeed, -1.0, 1.0);
+    xSpeed = applyDeadband(xSpeed, m_deadband);
+
+    // Compensate for gyro angle.
+    Vector2d input = new Vector2d(ySpeed, xSpeed);
+    input.rotate(-gyroAngle);
+
+    inputSpeeds[MotorType.kFrontLeft.value] = input.x + input.y + zRotation;
+    inputSpeeds[MotorType.kFrontRight.value] = -input.x + input.y - zRotation;
+    inputSpeeds[MotorType.kRearLeft.value] = -input.x + input.y + zRotation;
+    inputSpeeds[MotorType.kRearRight.value] = input.x + input.y - zRotation;
+
+    normalize(wheelSpeeds);
+
+    set(MotorType.kFrontLeft, m_maxOutput);
+    set(MotorType.kFrontRight, -m_maxOutput);
+    set(MotorType.kRearLeft, m_maxOutput);
+    set(MotorType.kRearRight, -m_maxOutput);
+
+    feed();
+  }
+
+  void calc(MotorType mt) {
+    PIDController c = controllers[mt.value];
+    double inputSpeed = inputSpeeds[mt.value];
+    double measuredSpeed = encoders[mt.value].getRate();
+    wheelSpeeds[mt.value] = c.calculate(measuredSpeed, inputSpeed);
+  }
+
+  void set(MotorType mt, double m) {
+    // Treat new PID computed power output as an "adjustment"
+    SpeedController sc = speedControllers[mt.value];
+    double output = wheelSpeeds[mt.value] * m;
+    double rateOutput = sc.get() + output;
+    rateOutput = Math.min(1.0, rateOutput);
+    rateOutput = Math.max(-1.0, rateOutput);
+    sc.set(rateOutput);
   }
 }

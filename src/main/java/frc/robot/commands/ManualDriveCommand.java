@@ -12,9 +12,9 @@ import frc.robot.OI;
 import frc.robot.Robot;
 
 public class ManualDriveCommand extends CommandBase {
-  /**
-   * Creates a new ManualDriveCommand.
-   */
+  
+  private OI oi = Robot.oi;
+
   public ManualDriveCommand() {
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(Robot.drivetrain);
@@ -28,9 +28,9 @@ public class ManualDriveCommand extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-      double x = OI.deadzone(-Robot.oi.joystick.getY());
-      double y = OI.deadzone(Robot.oi.joystick.getX());
-      double zr = OI.deadzone(Robot.oi.joystick.getZ());
+      double x = oi.throttle(-oi.joystick.getY(), true);
+      double y = oi.throttle(oi.joystick.getX(), true);
+      double zr = oi.throttle(oi.joystick.getZ(), true);
       Robot.drivetrain.drive(x, y, zr);
   }
 

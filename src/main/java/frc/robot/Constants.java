@@ -29,6 +29,7 @@ public final class Constants {
     // This shoudl probably be moved
     public static final MecanumDriveKinematics MecanumKinematics = new MecanumDriveKinematics(lfWheel, rfWheel, lbWheel, rbWheel);
     public static final double Deadzone = 0.1;
+    public static final double ManualThrottle = 1;
     public static final boolean GyroReversed = false;
 	public static final String VisonTableKey = "Vision";
 
